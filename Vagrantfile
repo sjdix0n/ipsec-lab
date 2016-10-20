@@ -28,7 +28,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #  end
 
  config.vm.define :cpe3 do |cpe3|
-    cpe3.vm.box = "higebu/vyos-1.1.7-amd64"
+    cpe3.vm.box = "higebu/vyos"
     cpe3.vm.network "private_network", virtualbox__intnet: "internet", ip: "10.0.0.3", netmask: "255.255.255.0"
     cpe3.vm.network "private_network", virtualbox__intnet: "cpe3-site3", ip: "192.168.3.1", netmask: "255.255.255.0"
     cpe3.vm.synced_folder ".", "/vagrant", disabled: true

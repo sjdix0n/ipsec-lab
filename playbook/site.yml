@@ -4,6 +4,7 @@
     become_method: sudo
     hosts: 
       - site1 
+      - site2 
       - site3 
     tasks:
       - command: /sbin/route add -net {{ route }} gw {{ gw }} 

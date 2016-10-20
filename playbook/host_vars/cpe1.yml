@@ -1,0 +1,5 @@
+hostname: cpe1
+sshport: 12203
+wanint: ge-0/0/1
+lanint: ge-0/0/2
+gw: 10.0.0.254

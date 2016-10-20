@@ -1,0 +1,3 @@
+hostname: cpe3
+wanint: eth1
+lanint: eth2

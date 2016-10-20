@@ -1,0 +1,41 @@
+set security ike proposal ike-proposal-SITE3 authentication-method pre-shared-keys
+set security ike proposal ike-proposal-SITE3 dh-group group2
+set security ike proposal ike-proposal-SITE3 authentication-algorithm md5
+set security ike proposal ike-proposal-SITE3 encryption-algorithm 3des-cbc
+set security ike proposal ike-proposal-SITE3 lifetime-seconds 3600
+set security ike policy ike-policy-SITE3 mode main
+set security ike policy ike-policy-SITE3 proposals ike-proposal-SITE3
+set security ike policy ike-policy-SITE3 pre-shared-key ascii-text {{ sharedsecret }}
+set security ike gateway ike-gate-SITE3 ike-policy ike-policy-SITE3
+set security ike gateway ike-gate-SITE3 address {{ cpe3wanip }}
+set security ike gateway ike-gate-SITE3 external-interface {{ wanint }}
+set security ipsec proposal ipsec-proposal-SITE3 protocol esp
+set security ipsec proposal ipsec-proposal-SITE3 authentication-algorithm hmac-md5-96
+set security ipsec proposal ipsec-proposal-SITE3 encryption-algorithm 3des-cbc
+set security ipsec proposal ipsec-proposal-SITE3 lifetime-seconds 86400
+set security ipsec policy ipsec-policy-SITE3 perfect-forward-secrecy keys group2
+set security ipsec policy ipsec-policy-SITE3 proposals ipsec-proposal-SITE3
+set security ipsec vpn ipsec-vpn-SITE3 ike gateway ike-gate-SITE3
+set security ipsec vpn ipsec-vpn-SITE3 ike ipsec-policy ipsec-policy-SITE3
+set security nat source rule-set trust-to-untrust from zone trust
+set security nat source rule-set trust-to-untrust to zone untrust
+set security nat source rule-set trust-to-untrust rule VPN_TRAFFIC match source-address {{ cpe1lansubnet }}
+set security nat source rule-set trust-to-untrust rule VPN_TRAFFIC match destination-address {{ cpe3lansubnet }}
+set security nat source rule-set trust-to-untrust rule VPN_TRAFFIC then source-nat off
+set security nat source rule-set trust-to-untrust rule source-nat-rule match source-address 0.0.0.0/0
+set security nat source rule-set trust-to-untrust rule source-nat-rule then source-nat interface
+set security policies from-zone trust to-zone untrust policy vpnpolicy-trust-untrust-SITE3 match source-address net-LOCAL
+set security policies from-zone trust to-zone untrust policy vpnpolicy-trust-untrust-SITE3 match destination-address net-SITE3
+set security policies from-zone trust to-zone untrust policy vpnpolicy-trust-untrust-SITE3 match application any
+set security policies from-zone trust to-zone untrust policy vpnpolicy-trust-untrust-SITE3 then permit tunnel ipsec-vpn ipsec-vpn-SITE3
+set security policies from-zone trust to-zone untrust policy vpnpolicy-trust-untrust-SITE3 then permit tunnel pair-policy vpnpolicy-untrust-trust-SITE3
+insert security policies from-zone trust to-zone untrust policy vpnpolicy-trust-untrust-SITE3 before policy default-permit
+set security policies from-zone untrust to-zone trust policy vpnpolicy-untrust-trust-SITE3 match source-address net-SITE3
+set security policies from-zone untrust to-zone trust policy vpnpolicy-untrust-trust-SITE3 match destination-address net-LOCAL
+set security policies from-zone untrust to-zone trust policy vpnpolicy-untrust-trust-SITE3 match application any
+set security policies from-zone untrust to-zone trust policy vpnpolicy-untrust-trust-SITE3 then permit tunnel ipsec-vpn ipsec-vpn-SITE3
+set security policies from-zone untrust to-zone trust policy vpnpolicy-untrust-trust-SITE3 then permit tunnel pair-policy vpnpolicy-trust-untrust-SITE3
+insert security policies from-zone untrust to-zone trust policy vpnpolicy-untrust-trust-SITE3 before policy default-deny
+set security address-book global address net-SITE3 {{ cpe3lansubnet }}
+set security address-book global address net-LOCAL {{ cpe1lansubnet }}
+set routing-options static route {{ route }} next-hop {{ gw }} 

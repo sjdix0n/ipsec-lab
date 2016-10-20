@@ -1,0 +1,9 @@
+---
+  - name: Host route 
+    become: yes
+    become_method: sudo
+    hosts: 
+      - site1 
+      - site3 
+    tasks:
+      - command: /sbin/route add -net {{ route }} gw {{ gw }} 

@@ -1,0 +1,6 @@
+---
+  - name: VyOS
+    hosts: cpe3
+    roles:
+      - vyos-base
+      - vyos-vpn

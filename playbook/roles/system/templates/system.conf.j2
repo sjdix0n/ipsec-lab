@@ -1,0 +1,15 @@
+set system host-name {{ hostname }}
+set system syslog file PROTO-EVENTS.log any any
+set system syslog file PROTO-EVENTS.log match "LINK_DOWN|LINK_UP|RPD_ISIS|RPD_OSPF|RPD_LDP|RPD_RSVP|RPD_MPLS_LSP|BFDD_TRAP_STATE|RPD_PIM|RPD_BGP_NEIGHBOR_STATE_CHANGED|VRRPD_NEW|lacp_update_state_userspace"
+set system syslog file PROTO-EVENTS.log archive size 1m
+set system syslog file PROTO-EVENTS.log archive files 10
+set system syslog file PROTO-EVENTS.log archive world-readable
+set protocols lldp interface all 
+set security zones security-zone trust host-inbound-traffic system-services all
+set security zones security-zone trust host-inbound-traffic protocols all
+set security zones security-zone trust interfaces {{ lanint }}
+set security zones security-zone untrust screen untrust-screen
+set security zones security-zone untrust host-inbound-traffic system-services ssh
+set security zones security-zone untrust host-inbound-traffic system-services ping
+set security zones security-zone untrust host-inbound-traffic system-services ike
+set security zones security-zone untrust interfaces {{ wanint }}

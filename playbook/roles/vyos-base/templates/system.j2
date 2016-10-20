@@ -1,0 +1,45 @@
+#!/bin/vbash
+
+source /opt/vyatta/etc/functions/script-template
+
+set hostname {{ hostname }}
+set firewall name ALLOW-ALL default-action 'drop'
+set firewall name ALLOW-ALL rule 1 action 'accept'
+set firewall name ALLOW-ALL rule 1 protocol 'all'
+set firewall name OUTSIDE-TO-INSIDE default-action 'drop'
+set firewall name OUTSIDE-TO-INSIDE rule 1 action 'accept'
+set firewall name OUTSIDE-TO-INSIDE rule 1 protocol 'all'
+set firewall name OUTSIDE-TO-INSIDE rule 1 state established 'enable'
+set firewall name OUTSIDE-TO-INSIDE rule 1 state related 'enable'
+set firewall name OUTSIDE-TO-SELF default-action 'drop'
+set firewall name OUTSIDE-TO-SELF rule 1 action 'accept'
+set firewall name OUTSIDE-TO-SELF rule 1 protocol 'all'
+set firewall name OUTSIDE-TO-SELF rule 1 state established 'enable'
+set firewall name OUTSIDE-TO-SELF rule 1 state related 'enable'
+set nat source rule 1024 outbound-interface {{ wanint }}
+set nat source rule 1024 source address {{ cpe3lansubnet }}
+set nat source rule 1024 translation address 'masquerade'
+set zone-policy zone inside default-action 'drop'
+set zone-policy zone inside description 'Inside - Internal zone'
+set zone-policy zone inside from outside firewall name 'OUTSIDE-TO-INSIDE'
+set zone-policy zone inside from self firewall name 'ALLOW-ALL'
+set zone-policy zone inside interface {{ lanint }}
+set zone-policy zone outside default-action 'drop'
+set zone-policy zone outside description 'Outside - Internet zone'
+set zone-policy zone outside from inside firewall name 'ALLOW-ALL'
+set zone-policy zone outside from self firewall name 'ALLOW-ALL'
+set zone-policy zone outside interface {{ wanint }}
+set zone-policy zone self default-action 'drop'
+set zone-policy zone self description 'Self - Access to localhost'
+set zone-policy zone self from inside firewall name 'ALLOW-ALL'
+set zone-policy zone self from outside firewall name 'OUTSIDE-TO-SELF'
+set zone-policy zone self from vagrant firewall name 'ALLOW-ALL'
+set zone-policy zone self 'local-zone'
+set zone-policy zone vagrant default-action 'drop'
+set zone-policy zone vagrant from self firewall name 'ALLOW-ALL'
+set zone-policy zone vagrant interface eth0
+
+commit
+save
+
+

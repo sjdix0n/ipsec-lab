@@ -1,0 +1,11 @@
+pkg_dir: packages
+log_dir: logs
+build_dir: build
+cpe1wanip: 10.0.0.1
+cpe2wanip: 10.0.0.2
+cpe3wanip: 10.0.0.3
+cpe1lansubnet: 192.168.1.0/24
+cpe2lansubnet: 192.168.2.0/24
+cpe3lansubnet: 192.168.3.0/24
+sharedsecret: master01 
+route: 192.168.0.0/16

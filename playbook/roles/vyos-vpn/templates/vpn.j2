@@ -1,0 +1,44 @@
+#!/bin/vbash
+
+source /opt/vyatta/etc/functions/script-template
+
+set vpn ipsec esp-group ESP-2 compression 'disable'
+set vpn ipsec esp-group ESP-2 lifetime '86400'
+set vpn ipsec esp-group ESP-2 mode 'tunnel'
+set vpn ipsec esp-group ESP-2 pfs 'dh-group2'
+set vpn ipsec esp-group ESP-2 proposal 1 encryption '3des'
+set vpn ipsec esp-group ESP-2 proposal 1 hash 'md5'
+set vpn ipsec ike-group IKE-2 key-exchange 'ikev1'
+set vpn ipsec ike-group IKE-2 lifetime '3600'
+set vpn ipsec ike-group IKE-2 proposal 1 dh-group '2'
+set vpn ipsec ike-group IKE-2 proposal 1 encryption '3des'
+set vpn ipsec ike-group IKE-2 proposal 1 hash 'md5'
+set vpn ipsec ipsec-interfaces interface {{ wanint }}
+set vpn ipsec nat-networks allowed-network '10.0.0.0/8'
+set vpn ipsec nat-networks allowed-network '172.16.0.0/12'
+set vpn ipsec nat-networks allowed-network '192.168.0.0/16'
+set vpn ipsec nat-traversal 'enable'
+set vpn ipsec site-to-site peer {{ cpe1wanip }} authentication mode 'pre-shared-secret'
+set vpn ipsec site-to-site peer {{ cpe1wanip }} authentication pre-shared-secret {{ sharedsecret }}
+set vpn ipsec site-to-site peer {{ cpe1wanip }} connection-type 'initiate'
+set vpn ipsec site-to-site peer {{ cpe1wanip }} default-esp-group 'ESP-2'
+set vpn ipsec site-to-site peer {{ cpe1wanip }} ike-group 'IKE-2'
+set vpn ipsec site-to-site peer {{ cpe1wanip }} local-address {{ cpe3wanip }}
+set vpn ipsec site-to-site peer {{ cpe1wanip }} tunnel 1 allow-nat-networks 'disable'
+set vpn ipsec site-to-site peer {{ cpe1wanip }} tunnel 1 allow-public-networks 'disable'
+set vpn ipsec site-to-site peer {{ cpe1wanip }} tunnel 1 local prefix {{ cpe3lansubnet }}
+set vpn ipsec site-to-site peer {{ cpe1wanip }} tunnel 1 remote prefix {{ cpe1lansubnet }}
+set firewall name OUTSIDE-TO-INSIDE rule 110 action 'accept'
+set firewall name OUTSIDE-TO-INSIDE rule 110 destination address {{ cpe3lansubnet }}
+set firewall name OUTSIDE-TO-INSIDE rule 110 protocol 'all'
+set firewall name OUTSIDE-TO-INSIDE rule 110 source address {{ cpe1lansubnet }}
+set firewall name OUTSIDE-TO-SELF rule 110 action 'accept'
+set firewall name OUTSIDE-TO-SELF rule 110 source address {{ cpe1wanip }}
+set nat source rule 110 destination address {{ cpe1lansubnet }}
+set nat source rule 110 'exclude'
+set nat source rule 110 outbound-interface {{ wanint }}
+set nat source rule 110 source address {{ cpe3lansubnet }}
+set nat source rule 110 translation address 'masquerade'
+
+commit
+save

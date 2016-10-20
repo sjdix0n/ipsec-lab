@@ -1,0 +1,105 @@
+---
+  - name: Creating build directories for each host
+    hosts: cpe1
+    connection: local
+    gather_facts: no
+    tasks:
+      - name: set variables on a per host basis
+        set_fact: 
+          build_dir: "{{ build_dir }}/{{ inventory_hostname }}/tmp"
+          junos_conf: "{{ build_dir }}/{{ inventory_hostname}}/junos.set"
+      - name: remove host build temp directory
+        file: path={{ build_dir }} state=absent
+      - name: create host build temp directory
+        file: path={{ build_dir }} state=directory
+      - name: create logs directory 
+        file: path={{ log_dir }} state=directory
+
+# =========================================================
+# Finish by assembling config snippets into single file
+# =========================================================
+
+  - name: Collect facts from devices
+    hosts: cpe1
+    roles:       
+     - Juniper.junos
+     - system
+    connection: local
+
+    tasks:
+     - name: Render initial configuration
+       assemble: src={{ build_dir }} dest={{ junos_conf }}
+
+# =========================================================
+# Role based config template building
+# =========================================================
+
+  - name: Base System for all devices
+    hosts: cpe1
+    connection: local
+    gather_facts: no
+    roles:
+      - system
+
+# VPN juniper routers
+
+  - name: JunOS VPN
+    hosts: 
+      - cpe1
+    connection: local
+    gather_facts: no
+    roles:
+     - junos-vpn
+
+
+# =========================================================
+# Finish by assembling config snippets into single file
+# =========================================================
+
+  - name: Creating final junos.conf
+    hosts: cpe1
+    connection: local
+    gather_facts: no
+    tasks:
+      - name: assembling configfurations
+        assemble: src={{ build_dir }} dest={{ junos_conf }}
+
+# =========================================================
+# Publish configuration to devices
+# =========================================================
+
+  - name: "Config:Merge"
+    hosts: cpe1
+    connection: local
+    gather_facts: no
+    roles:
+      - Juniper.junos
+    tasks:
+      - name: load-merge config file
+        junos_install_config:
+          overwrite='no' 
+          host={{ ansible_ssh_host }}
+          port={{ sshport  }}
+          user=root
+          passwd=Juniper
+          file={{ junos_conf }}
+          logfile={{ log_dir }}/{{ inventory_hostname }}.log
+
+### Vyos
+  - name: VyOS
+    hosts: cpe3
+    roles:
+      - vyos-base
+      - vyos-vpn
+
+##### Ubuntu test hosts
+
+  - name: Host route 
+    become: yes
+    become_method: sudo
+    hosts: 
+      - site1 
+      - site2 
+      - site3 
+    tasks:
+      - command: /sbin/route add -net {{ route }} gw {{ gw }} 

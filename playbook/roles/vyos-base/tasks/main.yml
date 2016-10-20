@@ -1,0 +1,4 @@
+- name: upload the script for router config 
+  template: src=system.j2 dest=/tmp/script.sh mode=0755
+- name: run the script for router config 
+  command: /tmp/script.sh

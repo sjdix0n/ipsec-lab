@@ -1,0 +1,6 @@
+---
+- hosts: leaf1 
+  user: vagrant
+  gather_facts: no
+  tasks:
+    - command: "uname -a"
